@@ -1,49 +1,62 @@
+import os
+import sys
 from ishell.console import Console
 from ishell.command import Command
 import boto3
-import os 
 
-console = Console(prompt="aws-key-tools ", prompt_delim=">")
+
+
+class MyConsole(Console):
+    def print_childs_help(self):
+        print("Help:")
+        for command_name in self.childs.keys():
+            print("%15s - %s" % (command_name, self.childs[command_name].help))
+        print
+
+
+console = MyConsole(prompt="aws-key-tools", prompt_delim=">")
 access_key = ""
 secret_key = ""
-current_arn =""
+current_arn = ""
 
 
-## 初始化access_key 和 secret_key
+# 初始化access_key 和 secret_key
 class InitCommand(Command):
     def run(self, line):
-        #读取access_key 和 secret_key
+        # 读取access_key 和 secret_key
         global access_key
         global secret_key
         access_key = input("access_key:")
         secret_key = input("secret_key:")
-        #将access_key 和 secret_key 写入配置文件
-        #TODO 修改配置文件地址
-        #获取家目录
+        # 将access_key 和 secret_key 写入配置文件
+        # TODO 修改配置文件地址
+        # 获取家目录
         home_path = os.path.expanduser("~")
-        #检查.aws 文件夹是否存在，不存在则创建
+        # 检查.aws 文件夹是否存在，不存在则创建
+
         if not os.path.exists(home_path + "/.aws"):
             os.mkdir(home_path + "/.aws")
-        config_path = os.path.join(home_path, ".aws","config")
-        #[default]
+        config_path = os.path.join(home_path, ".aws", "config")
+        # [default]
         # aws_access_key_id=foo
         # aws_secret_access_key=bar
         # aws_session_token=baz
-        with open(config_path, "w") as f:
+        with open(config_path, mode="w", encoding="utf-8") as f:
             f.write("[default]\n")
             f.write("aws_access_key_id=" + access_key + "\n")
             f.write("aws_secret_access_key=" + secret_key + "\n")
         print("设置成功")
 
-## 获取对应用户的信息
+
+# 获取对应用户的信息
 class UserInfoCommand(Command):
     def run(self, line):
-        iam = boto3.resource('iam') 
+        iam = boto3.resource('iam')
         current_user = iam.CurrentUser()
-        global current_arn 
+        global current_arn
         current_arn = current_user.arn
-        print("UserInfo:")
-        print("\tarn:\t\t\t", current_user.arn) #这个arn是啥东西？老哥？
+        print("\nUserInfo:")
+        print("\tarn:\t\t\t", current_user.arn)
         print("\tuser_id:\t\t", current_user.user_id)
         print("\tcurrent_user:\t\t", current_user.user_name)
         print("\tcreate_date:\t\t", current_user.create_date)
@@ -57,15 +70,14 @@ class UserInfoCommand(Command):
         print()
 
 
-
-## 获取key对应的用户权限
+# 获取key对应的用户权限
 class UserPrivilegesCommand(Command):
     def run(self, line):
         iam = boto3.resource('iam')
         # arn = iam.CurrentUser().arn if current_arn == "" else current_arn
         # print(arn)
         # arn="iam::455720863430:user/derian"
-        policy = iam.Policy("arn") 
+        policy = iam.Policy("arn")
         print("UserPrivileges:")
         print("\tattachment_count:\t", policy.attachment_count)
         print("\tcreate_date:\t\t", policy.create_date)
@@ -80,25 +92,39 @@ class UserPrivilegesCommand(Command):
         print("\tupdate_date:\t\t", policy.update_date)
 
 
-## 列出所有地区的ec2主机信息
+# 列出所有地区的ec2主机信息
 class EC2InfoCommand(Command):
     def run(self, line):
-        print("Showing all hostinfo...")
+        print("Showing all host info...")
 
 
-## 远程命令执行
+# 远程命令执行
 class RemoteCommandCommand(Command):
     def run(self, line):
-        print("Showing all hostinfo...")
+        print("Showing all host info...")
 
 
-## 创建IAM角色
+# 创建IAM角色
 class IAMRoleCommand(Command):
     def run(self, line):
-        print("Showing all hostinfo...")
+        print("Showing all host info...")
+
+
+# 退出当前程序
+class ExitCommand(Command):
+    def run(self, line):
+        sys.exit()
+
+
+# 查看命令帮助
+class HelpCommand(Command):
+
+    def run(self, line):
+        console.print_childs_help()
 
 
 def main():
+    help_command = HelpCommand("help", help="查看命令帮助")
     init_command = InitCommand("init", "初始化 access_key 和 secret_key")
     userinfo_command = UserInfoCommand("userinfo", help="获取用户信息")
     user_privileges_command = UserPrivilegesCommand("privileges",
@@ -106,12 +132,17 @@ def main():
     ec2_info_command = EC2InfoCommand("ec2info", help="获取ec2信息")
     remote_command_command = RemoteCommandCommand("remote", help="远程命令执行")
     iam_role_command = IAMRoleCommand("create-role", help="创建IAM角色")
+    exit_command = ExitCommand("exit", help="退出程序")
+
+    console.addChild(help_command)
     console.addChild(init_command)
     console.addChild(userinfo_command)
     console.addChild(user_privileges_command)
     console.addChild(ec2_info_command)
     console.addChild(remote_command_command)
     console.addChild(iam_role_command)
+    console.addChild(exit_command)
+
     console.loop()
 
 
