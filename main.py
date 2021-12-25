@@ -35,14 +35,6 @@ class InitCommand(Command):
             f.write("aws_secret_access_key=" + secret_key + "\n")
         print("设置成功")
 
-# aws //这个呢
-# access_key : = AKIAUXGYIDMBL4IKDRHL
-# screr_key =  a6JyzYyRaVeFHiHkMiTkR06pMymPpHFHF2SsVRFX
-# ap-east-1  //这个呢？地区
-
-# AKIAWUGYUQ3DE2PLHE3K
-# lCg1dTBvie5F/u9O5T7NXig9acaGwAoRpdlNhJuI
-# 这几个是连在一起吗？
 ## 获取对应用户的信息
 class UserInfoCommand(Command):
     def run(self, line):
