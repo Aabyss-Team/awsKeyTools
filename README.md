@@ -10,3 +10,9 @@
   - 操作系统  公网ip 内网ip 实例id 计算机名称等
 - ec2远程执行命令
 - 创建IAM角色并添加到ec2上
+
+
+## 相关文档：
+https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html
+https://docs.aws.amazon.com/index.html?nc2=h_ql_doc
+

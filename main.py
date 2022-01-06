@@ -94,8 +94,28 @@ class UserPrivilegesCommand(Command):
 # 列出所有地区的ec2主机信息
 class EC2InfoCommand(Command):
     def run(self, line):
-        print("Showing all host info...")
-
+        ec2 = boto3.client('ec2',region_name='us-east-1')
+        response = ec2.describe_regions() #获取所有的地区 yes hhhh
+        for region in response['Regions']:
+            print("%s" % region['RegionName'])
+            ec2 = boto3.client('ec2',region_name=region['RegionName'])
+            response = ec2.describe_instances()
+            #判断是否有实例
+            if len(response['Reservations']) == 0:
+                print("\tNo instances")
+                continue
+            for reservation in response['Reservations']:
+                for instance in reservation['Instances']:
+                    #输出InstanceId、KeyName、PrivateIpAddress、PublicIpAddress、Architecture、IamInstanceProfile、RootDeviceName、PlatformDetails
+                    print("\tInstanceId:\t\t%s" % instance['InstanceId'])
+                    print("\tKeyName:\t\t%s" % instance['KeyName'])
+                    print("\tPublicIpAddress:\t%s" % instance['PublicIpAddress'])
+                    print("\tPrivateIpAddress:\t%s" % instance['PrivateIpAddress'])
+                    print("\tIamInstanceProfile:\t%s" % instance['IamInstanceProfile']['Arn'])
+                    print("\tPlatformDetails:\t%s" % instance['PlatformDetails'])
+                    print("\tArchitecture:\t\t%s" % instance['Architecture'])
+                    print("\tRootDeviceName:\t\t%s" % instance['RootDeviceName'])
+                    print()
 
 # 远程命令执行
 class RemoteCommandCommand(Command):
@@ -132,7 +152,7 @@ def main():
     userinfo_command = UserInfoCommand("userinfo", help="获取用户信息")
     user_privileges_command = UserPrivilegesCommand("privileges",
                                                     help="获取用户权限")
-    ec2_info_command = EC2InfoCommand("ec2info", help="获取ec2信息")
+    ec2_info_command = EC2InfoCommand("ec2info", help="获取所有地区的EC2（Elastic Computer Cloud）")
     remote_command_command = RemoteCommandCommand("remote", help="远程命令执行")
     iam_role_command = IAMRoleCommand("create-role", help="创建IAM角色")
     exit_command = ExitCommand("exit", help="退出程序")
