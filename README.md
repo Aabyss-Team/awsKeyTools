@@ -11,6 +11,14 @@
 - ec2远程执行命令
 - 创建IAM角色并添加到ec2上
 
+新增功能
+- 提示用户必须init操作
+- 封装列举的实例到一个对象中
+- 权限枚举模块(阅读源码自己实现)
+- ak生成aws_web控制端url
+- 假如ec2没有ssm角色，自动添加，有权限限制 ， 简称就是给IMA赋予角色
+
+
 
 ## 相关文档：
 https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html

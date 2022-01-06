@@ -211,6 +211,7 @@ def main():
     console.addChild(iam_role_command)
     console.addChild(exit_command)
 
+    print("第一次运行工具，请务必先执行init命令, 然后才能执行其他命令")
     console.loop()
 
 
