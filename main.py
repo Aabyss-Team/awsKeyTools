@@ -11,7 +11,6 @@ class MyConsole(Console):
         print("Help:")
         for command_name in self.childs.keys():
             print("%15s - %s" % (command_name, self.childs[command_name].help))
-        print
 
 
 console = MyConsole(prompt="aws-key-tools", prompt_delim=">")
@@ -109,6 +108,10 @@ class IAMRoleCommand(Command):
     def run(self, line):
         print("Showing all host info...")
 
+# 根据ak生成aws控制台访问链接
+class CreateAwsUrl(Command):
+    def run(self, line):
+        print("根据当前高权限生成一个aws控制台访问的url")
 
 # 退出当前程序
 class ExitCommand(Command):
