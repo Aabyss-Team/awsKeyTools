@@ -14,7 +14,7 @@ class MyConsole(Console):
             print("%15s - %s" % (command_name, self.childs[command_name].help))
 
 
-console = MyConsole(prompt="aws-key-tools", prompt_delim=">")
+console = MyConsole(prompt="aws-key-tools", prompt_delim=" >")
 access_key = ""
 secret_key = ""
 current_arn = ""
@@ -33,7 +33,6 @@ class InitCommand(Command):
         # 获取家目录
         home_path = os.path.expanduser("~")
         # 检查.aws 文件夹是否存在，不存在则创建
-
         if not os.path.exists(home_path + "/.aws"):
             os.mkdir(home_path + "/.aws")
         config_path = os.path.join(home_path, ".aws", "config")
@@ -100,28 +99,25 @@ class EC2InfoCommand(Command):
         ec2 = boto3.client('ec2', region_name='us-east-1')
         response = ec2.describe_regions()  # 获取所有的地区 yes hhhh
         for region in response['Regions']:
-            print("%s" % region['RegionName'])
-            ec2 = boto3.client('ec2', region_name=region['RegionName'])
+            print("%s" % region.get('RegionName'))
+            ec2 = boto3.client('ec2', region_name=region.get('RegionName'))
             response = ec2.describe_instances()
             # 判断是否有实例
-            if len(response['Reservations']) == 0:
+            if len(response.get('Reservations')) == 0:
                 print("\tNo instances")
                 continue
-            for reservation in response['Reservations']:
-                for instance in reservation['Instances']:
+            for reservation in response.get('Reservations'):
+                for instance in reservation.get('Instances'):
                     # 输出InstanceId、KeyName、PrivateIpAddress、PublicIpAddress、Architecture、IamInstanceProfile、RootDeviceName、PlatformDetails
-                    print("\tInstanceId:\t\t%s" % instance['InstanceId'])
-                    print("\tKeyName:\t\t%s" % instance['KeyName'])
-                    print("\tPublicIpAddress:\t%s" % instance['PublicIpAddress'])
-                    print("\tPrivateIpAddress:\t%s" % instance['PrivateIpAddress'])
-                    print("\tIamInstanceProfile:\t%s" % instance['IamInstanceProfile']['Arn'])
-                    # arn = iam.CurrentUser().arn if current_arn == "" else current_arn
-                    PlatformDetails = instance.get("Platform") if instance.get("Platform") else instance.get(
-                        "PlatformDetail")
+                    print("\tInstanceId:\t\t%s" % instance.get('InstanceId'))
+                    print("\tKeyName:\t\t%s" % instance.get('KeyName'))
+                    print("\tPublicIpAddress:\t%s" % instance.get('PublicIpAddress'))
+                    print("\tPrivateIpAddress:\t%s" % instance.get('PrivateIpAddress'))
+                    print("\tIamInstanceProfile:\t%s" % instance.get('IamInstanceProfile').get('Arn'))
+                    PlatformDetails = instance.get("Platform") if instance.get("Platform") else instance.get("PlatformDetail")
                     print("\tPlatformDetails:\t%s" % PlatformDetails)
-                    print("\tArchitecture:\t\t%s" % instance['Architecture'])
-                    print("\tRootDeviceName:\t\t%s" % instance['RootDeviceName'])
-
+                    print("\tArchitecture:\t\t%s" % instance.get('Architecture'))
+                    print("\tRootDeviceName:\t\t%s" % instance.get('RootDeviceName'))
                     print()
 
 
@@ -145,7 +141,7 @@ class RemoteCommandExecute(Command):
                 DocumentName=document_name,
                 Parameters={'commands': [cmd]},
             )
-            command_id = response['Command']['CommandId']
+            command_id = response.get('Command').get('CommandId')
 
             # 等待命令的结束
             i = 0
@@ -157,7 +153,7 @@ class RemoteCommandExecute(Command):
                 if output.get("Status") == "Success" and output.get("StatusDetails") == "Success":
                     break
                 i += 1
-                time.sleep(i)
+                time.sleep(1)
                 if i > 3:
                     break
 
@@ -197,7 +193,7 @@ def main():
     userinfo_command = UserInfoCommand("userinfo", help="获取用户信息")
     user_privileges_command = UserPrivilegesCommand("privileges",
                                                     help="获取用户权限")
-    ec2_info_command = EC2InfoCommand("ec2info", help="获取所有地区的EC2（Elastic Computer Cloud）")
+    ec2_info_command = EC2InfoCommand("ls-ec2", help="获取所有地区的EC2（Elastic Computer Cloud）")
     remote_command_command = RemoteCommandExecute("exec", help="远程命令执行")
     iam_role_command = IAMRoleCommand("create-role", help="创建IAM角色")
     exit_command = ExitCommand("exit", help="退出程序")
@@ -211,7 +207,7 @@ def main():
     console.addChild(iam_role_command)
     console.addChild(exit_command)
 
-    print("第一次运行工具，请务必先执行init命令, 然后才能执行其他命令")
+    # print("第一次运行工具，请务必先执行init命令, 然后才能执行其他命令")
     console.loop()
 
 
