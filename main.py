@@ -6,6 +6,7 @@ from ishell.console import Console
 from ishell.command import Command
 import boto3
 from enumerate_iam.main import enumerate_iam
+from  aws_consoler.cli import api 
 
 
 class MyConsole(Console):
@@ -14,6 +15,7 @@ class MyConsole(Console):
         for command_name in self.childs.keys():
             print("%15s - %s" % (command_name, self.childs[command_name].help))
 
+# 可以把read_key 加载MyConsole 的构造函数中
 
 console = MyConsole(prompt="aws-key-tools", prompt_delim=" >")
 access_key = ""
@@ -22,32 +24,37 @@ current_arn = ""
 ec2_lst = []
 
 
-
-
-# 初始化access_key 和 secret_key
-class InitCommand(Command):
-    def run(self, line):
-        # 读取access_key 和 secret_key
-        global access_key
-        global secret_key
-        access_key = input("access_key:")
-        secret_key = input("secret_key:")
+def read_key():
+    """读取文件中的key"""
+    global access_key
+    global secret_key
+    # 先检查全局变量的值 
+    if access_key and secret_key:
+        return access_key, secret_key
+    home_path = os.path.expanduser("~")
+    config_path = os.path.join(home_path, ".aws", "config")
+    # 如果存在配置文件,则读取配置文件
+    if os.path.exists(config_path):
+        with open(config_path, mode="r", encoding="utf-8") as f:
+            for line in f.readlines():
+                if line.startswith("aws_access_key_id"):
+                    access_key = line.split("=")[1].strip()
+                if line.startswith("aws_secret_access_key"):
+                    secret_key = line.split("=")[1].strip()
+    else:
+        #提示用户输入
+        access_key = input("access_key:").strip()
+        secret_key = input("secret_key:").strip()
         # 将access_key 和 secret_key 写入配置文件
-        # 获取家目录
-        home_path = os.path.expanduser("~")
-        # 检查.aws 文件夹是否存在，不存在则创建
+        # 检查.aws 文件夹是否存在，不存在则创建,这个目录得检查一下呀
         if not os.path.exists(home_path + "/.aws"):
             os.mkdir(home_path + "/.aws")
-        config_path = os.path.join(home_path, ".aws", "config")
-        # [default]
-        # aws_access_key_id=foo
-        # aws_secret_access_key=bar
-        # aws_session_token=baz
         with open(config_path, mode="w", encoding="utf-8") as f:
             f.write("[default]\n")
             f.write("aws_access_key_id=" + access_key + "\n")
-            f.write("aws_secret_access_key=" + secret_key + "\n")
-        print("设置成功")
+            f.write("aws_secret_access_key=" + secret_key + "\n") 
+    return access_key, secret_key
+
 
 
 # 获取对应用户的信息
@@ -75,26 +82,9 @@ class UserInfoCommand(Command):
 # 获取key对应的用户权限
 class UserPrivilegesCommand(Command):
     def run(self, line):
-        # 如果access_key 和 secret_key 为空，则尝试读取配置文件
-        global access_key
-        global secret_key
-        if access_key == "" or secret_key == "":
-            # 获取家目录
-            home_path = os.path.expanduser("~")
-            # 检查.aws 文件夹是否存在，不存在则创建
-            if not os.path.exists(home_path + "/.aws"):
-                os.mkdir(home_path + "/.aws")
-            config_path = os.path.join(home_path, ".aws", "config")
-            # 读取配置文件
-            with open(config_path, mode="r", encoding="utf-8") as f:
-                for line in f.readlines():
-                    if line.startswith("aws_access_key_id"):
-                        access_key = line.split("=")[1].strip()
-                    if line.startswith("aws_secret_access_key"):
-                        secret_key = line.split("=")[1].strip()
-        
         enumerate_iam(access_key=access_key, secret_key=secret_key,session_token=None, region=None)
-       
+
+
 
 
 class EC2Instance:
@@ -233,8 +223,10 @@ class IAMRoleCommand(Command):
 # 根据ak生成aws控制台访问链接
 class CreateAwsUrl(Command):
     def run(self, line):
-        print("根据当前高权限生成一个aws控制台访问的url")
-
+        print("根据当前权限生成一个aws控制台访问的url") #可以的，只要修改本地包就好了，这个就是args[]
+        api(access_key=access_key, secret_key=secret_key)
+        
+# 我先测一下哈
 
 # 退出当前程序
 class ExitCommand(Command):
@@ -250,26 +242,27 @@ class HelpCommand(Command):
 
 
 def main():
+    global access_key,secret_key
+    access_key,secret_key = read_key() 
+    # 初始化命令行控制台
     help_command = HelpCommand("help", help="查看命令帮助")
-    init_command = InitCommand("init", "初始化 access_key 和 secret_key")
     userinfo_command = UserInfoCommand("userinfo", help="获取用户信息")
     user_privileges_command = UserPrivilegesCommand("privileges",
                                                     help="获取用户权限")
     ec2_info_command = EC2InfoCommand("ec2", help="获取所有地区的EC2（Elastic Computer Cloud）") 
     remote_command_command = RemoteCommandExecute("exec", help="远程命令执行")
     iam_role_command = IAMRoleCommand("create-role", help="创建IAM角色")
+    create_aws_url_command = CreateAwsUrl("aws-url", help="根据当前高权限生成一个aws控制台访问的url")
     exit_command = ExitCommand("exit", help="退出程序")
 
     console.addChild(help_command)
-    console.addChild(init_command)
     console.addChild(userinfo_command)
     console.addChild(user_privileges_command)
     console.addChild(ec2_info_command)
     console.addChild(remote_command_command)
     console.addChild(iam_role_command)
+    console.addChild(create_aws_url_command)
     console.addChild(exit_command)
-
-    print("第一次运行,请务必先执行init命令, 用来初始化ak")
     console.loop()
 
 
