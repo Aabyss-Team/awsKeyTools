@@ -1,9 +1,9 @@
 ## 使用
 环境： 
-``bash
+```bash
 linux or mac(windows不支持)
 python version >= 3.7
-``
+```
 
 
 安装： 
