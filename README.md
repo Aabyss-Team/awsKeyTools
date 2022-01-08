@@ -1,12 +1,20 @@
 ## 使用
-环境： linux python3.7 （Windows平台无法使用）
+环境： 
+``bash
+linux or mac(windows不支持)
+python version >= 3.7
+``
+
+
 安装： 
 ```bash
 git clone xxx
 cd awsKeyTools
 pip3 install -r requirements.txt
 ```
+
 如果遇到 ` error: command 'x86_64-linux-gnu-gcc' failed with exit status 1` 报错 
+
 解决方案： sudo apt-get install libncurses5-dev
 
 
