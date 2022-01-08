@@ -19,6 +19,7 @@ console = MyConsole(prompt="aws-key-tools", prompt_delim=" >")
 access_key = ""
 secret_key = ""
 current_arn = ""
+ec2_lst = []
 
 
 
@@ -95,76 +96,132 @@ class UserPrivilegesCommand(Command):
         enumerate_iam(access_key=access_key, secret_key=secret_key,session_token=None, region=None)
        
 
-class Instance:
-    pass
+
+class EC2Instance:
+    def __init__(self, id, region, instance_id, key_name, public_ip, private_ip, iam_instance_profile, platform_details,
+                 architecture,
+                 root_device):
+        self.id = id
+        self.region = region
+        self.instance_id = instance_id
+        self.key_name = key_name
+        self.public_ip = public_ip
+        self.private_ip = private_ip
+        self.iam_instance_profile = iam_instance_profile
+        self.platform_details = platform_details
+        self.architecture = architecture
+        self.root_device = root_device
+
+    def info(self):
+        print(f"id:\t\t\t{self.id}")
+        print(f"Region:\t\t\t{self.region}")
+        print(f"InstanceId:\t\t{self.instance_id}")
+        print(f"KeyName:\t\t{self.key_name}")
+        print(f"PublicIpAddress:\t{self.public_ip}")
+        print(f"PrivateIpAddress:\t{self.private_ip}")
+        print(f"IamInstanceProfile:\t{self.iam_instance_profile}")
+        print(f"PlatformDetails:\t{self.platform_details}")
+        print(f"Architecture:\t\t{self.architecture}")
+        print(f"RootDeviceName:\t\t{self.root_device}")
+        print()
+
 
 # 列出所有地区的ec2主机信息
 class EC2InfoCommand(Command):
+    def show_ec2(self):
+        for ec2 in ec2_lst:
+            ec2.info()
+        print(f"一共获取的ec2数量为：{len(ec2_lst)}")
+
     def run(self, line):
+        print("ec2信息获取中...")
+        if len(ec2_lst):
+            self.show_ec2()
+            return
         ec2 = boto3.client('ec2', region_name='us-east-1')
         response = ec2.describe_regions()  # 获取所有的地区 yes hhhh
+        i = 1
         for region in response['Regions']:
-            print("%s" % region.get('RegionName'))
-            ec2 = boto3.client('ec2', region_name=region.get('RegionName'))
+            region_name = region['RegionName']
+            ec2 = boto3.client('ec2', region_name=region_name)
             response = ec2.describe_instances()
             # 判断是否有实例
-            if len(response.get('Reservations')) == 0:
+            if len(response['Reservations']) == 0:
+                print(region_name)
                 print("\tNo instances")
                 continue
-            for reservation in response.get('Reservations'):
-                for instance in reservation.get('Instances'):
-                    # 输出InstanceId、KeyName、PrivateIpAddress、PublicIpAddress、Architecture、IamInstanceProfile、RootDeviceName、PlatformDetails
-                    print("\tInstanceId:\t\t%s" % instance.get('InstanceId'))
-                    print("\tKeyName:\t\t%s" % instance.get('KeyName'))
-                    print("\tPublicIpAddress:\t%s" % instance.get('PublicIpAddress'))
-                    print("\tPrivateIpAddress:\t%s" % instance.get('PrivateIpAddress'))
-                    print("\tIamInstanceProfile:\t%s" % instance.get('IamInstanceProfile').get('Arn'))
-                    PlatformDetails = instance.get("Platform") if instance.get("Platform") else instance.get("PlatformDetail")
-                    print("\tPlatformDetails:\t%s" % PlatformDetails)
-                    print("\tArchitecture:\t\t%s" % instance.get('Architecture'))
-                    print("\tRootDeviceName:\t\t%s" % instance.get('RootDeviceName'))
-                    print()
+            for reservation in response['Reservations']:
+                for instance in reservation['Instances']:
+                    # 实例化ec2对象
+                    id = i
+                    instance_id = instance.get("InstanceId")
+                    key_name = instance.get("KeyName")
+                    public_ip = instance.get("PublicIpAddress")
+                    private_ip = instance.get("PrivateIpAddress")
+                    iam_instance_profile = instance.get("IamInstanceProfile").get('Arn')
+                    platform_details = instance.get("Platform") if instance.get("Platform") else instance.get(
+                        "PlatformDetail")
+                    architecture = instance.get("Architecture")
+                    root_device = instance.get("RootDeviceName")
+                    ec2_obj = EC2Instance(id, region_name, instance_id, key_name, public_ip, private_ip,
+                                          iam_instance_profile,
+                                          platform_details, architecture, root_device)
+                    ec2_lst.append(ec2_obj)
+                    i += 1
+        self.show_ec2()
 
 
 # 远程命令执行
 class RemoteCommandExecute(Command):
+    platform_dic = {
+        "linux": "AWS-RunShellScript",
+        "windows": "AWS-RunPowerShellScript",
+    }
+
     def run(self, line):
-        # 用户输入 实例id 对应地区 操作系统 命令
-        instance_id = 'i-08b14f120c367285d'
-        region_name = 'us-west-1'
-        document_name = 'AWS-RunShellScript'
-
-
         while 1:
-            cmd = input('shell>').strip()
-            if cmd == "exit":
-                break
-
-            ssm_client = boto3.client('ssm', region_name=region_name)
-            response = ssm_client.send_command(
-                InstanceIds=[instance_id, ],
-                DocumentName=document_name,
-                Parameters={'commands': [cmd]},
-            )
-            command_id = response.get('Command').get('CommandId')
-
-            # 等待命令的结束
-            i = 0
+            # 用户输入 实例id 对应地区 操作系统 命令
+            id = input("请输入ec2的id: ").strip()
+            if int(id) > len(ec2_lst):
+                print("请输入正确的ec2 id")
+                continue
+            ec2 = ec2_lst[int(id) - 1]
+            instance_id = ec2.instance_id
+            region_name = ec2.region
+            document_name = self.platform_dic.get(ec2.platform_details)
+            if not document_name:
+                platform_details = input("无法获取ec2对应平台信息，请手动输入: ").strip()
+                document_name = self.platform_dic.get(platform_details)
             while 1:
-                output = ssm_client.get_command_invocation(
-                    CommandId=command_id,
-                    InstanceId=instance_id,
-                )
-                if output.get("Status") == "Success" and output.get("StatusDetails") == "Success":
-                    break
-                i += 1
-                time.sleep(1)
-                if i > 3:
-                    break
+                cmd = input('shell>').strip()
+                if cmd == "exit":
+                    return
 
-            # 输出命令执行的结果
-            cmd_output = output.get("StandardOutputContent") + output.get("StandardErrorContent").strip()
-            print(cmd_output)
+                ssm_client = boto3.client('ssm', region_name=region_name)
+                response = ssm_client.send_command(
+                    InstanceIds=[instance_id, ],
+                    DocumentName=document_name,
+                    Parameters={'commands': [cmd]},
+                )
+                command_id = response['Command']['CommandId']
+
+                # 等待命令的结束
+                i = 0
+                while 1:
+                    output = ssm_client.get_command_invocation(
+                        CommandId=command_id,
+                        InstanceId=instance_id,
+                    )
+                    if output.get("Status") == "Success" and output.get("StatusDetails") == "Success":
+                        break
+                    i += 1
+                    time.sleep(i)
+                    if i > 3:
+                        break
+
+                # 输出命令执行的结果
+                cmd_output = output.get("StandardOutputContent") + output.get("StandardErrorContent").strip()
+                print(cmd_output)
 
 
 # 创建IAM角色
@@ -198,7 +255,7 @@ def main():
     userinfo_command = UserInfoCommand("userinfo", help="获取用户信息")
     user_privileges_command = UserPrivilegesCommand("privileges",
                                                     help="获取用户权限")
-    ec2_info_command = EC2InfoCommand("ls-ec2", help="获取所有地区的EC2（Elastic Computer Cloud）")
+    ec2_info_command = EC2InfoCommand("ec2", help="获取所有地区的EC2（Elastic Computer Cloud）") 
     remote_command_command = RemoteCommandExecute("exec", help="远程命令执行")
     iam_role_command = IAMRoleCommand("create-role", help="创建IAM角色")
     exit_command = ExitCommand("exit", help="退出程序")
@@ -212,7 +269,7 @@ def main():
     console.addChild(iam_role_command)
     console.addChild(exit_command)
 
-    # print("第一次运行工具，请务必先执行init命令, 然后才能执行其他命令")
+    print("第一次运行,请务必先执行init命令, 用来初始化ak")
     console.loop()
 
 
