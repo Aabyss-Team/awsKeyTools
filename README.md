@@ -8,7 +8,7 @@ python version >= 3.7
 
 安装： 
 ```bash
-git clone xxx
+git clone https://github.com/Aabyss-Team/awsKeyTools.git
 cd awsKeyTools
 pip3 install -r requirements.txt
 ```
