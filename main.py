@@ -5,6 +5,7 @@ import time
 from ishell.console import Console
 from ishell.command import Command
 import boto3
+from enumerate_iam.main import enumerate_iam
 
 
 class MyConsole(Console):
@@ -20,6 +21,8 @@ secret_key = ""
 current_arn = ""
 
 
+
+
 # 初始化access_key 和 secret_key
 class InitCommand(Command):
     def run(self, line):
@@ -29,7 +32,6 @@ class InitCommand(Command):
         access_key = input("access_key:")
         secret_key = input("secret_key:")
         # 将access_key 和 secret_key 写入配置文件
-        # TODO 修改配置文件地址
         # 获取家目录
         home_path = os.path.expanduser("~")
         # 检查.aws 文件夹是否存在，不存在则创建
@@ -72,23 +74,26 @@ class UserInfoCommand(Command):
 # 获取key对应的用户权限
 class UserPrivilegesCommand(Command):
     def run(self, line):
-        iam = boto3.resource('iam')
-        # arn = iam.CurrentUser().arn if current_arn == "" else current_arn
-        # print(arn)
-        # arn="iam::455720863430:user/derian"
-        policy = iam.Policy("arn")
-        print("UserPrivileges:")
-        print("\tattachment_count:\t", policy.attachment_count)
-        print("\tcreate_date:\t\t", policy.create_date)
-        print("\tdefault_version_id:\t", policy.default_version_id)
-        print("\tdescription:\t\t", policy.description)
-        print("\tis_attachable:\t\t", policy.is_attachable)
-        print("\tpath:\t\t\t", policy.path)
-        print("\tpermissions_boundary_usage_count:\t", policy.permissions_boundary_usage_count)
-        print("\tpolicy_id:\t\t", policy.policy_id)
-        print("\tpolicy_name:\t\t", policy.policy_name)
-        print("\ttags:\t\t\t", policy.tags)
-        print("\tupdate_date:\t\t", policy.update_date)
+        # 如果access_key 和 secret_key 为空，则尝试读取配置文件
+        global access_key
+        global secret_key
+        if access_key == "" or secret_key == "":
+            # 获取家目录
+            home_path = os.path.expanduser("~")
+            # 检查.aws 文件夹是否存在，不存在则创建
+            if not os.path.exists(home_path + "/.aws"):
+                os.mkdir(home_path + "/.aws")
+            config_path = os.path.join(home_path, ".aws", "config")
+            # 读取配置文件
+            with open(config_path, mode="r", encoding="utf-8") as f:
+                for line in f.readlines():
+                    if line.startswith("aws_access_key_id"):
+                        access_key = line.split("=")[1].strip()
+                    if line.startswith("aws_secret_access_key"):
+                        secret_key = line.split("=")[1].strip()
+        
+        enumerate_iam(access_key=access_key, secret_key=secret_key,session_token=None, region=None)
+       
 
 class Instance:
     pass
