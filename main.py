@@ -178,10 +178,11 @@ class RemoteCommandExecute(Command):
         while 1:
             # 用户输入 实例id 对应地区 操作系统 命令
             id = input("请输入ec2的id: ").strip()
-            if int(id) > len(ec2_lst):
+            try:
+                ec2 = ec2_lst[int(id) - 1]
+            except Exception:
                 print("请输入正确的ec2 id")
                 continue
-            ec2 = ec2_lst[int(id) - 1]
             instance_id = ec2.instance_id
             region_name = ec2.region
             document_name = self.platform_dic.get(ec2.platform_details)
