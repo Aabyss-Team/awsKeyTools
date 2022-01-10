@@ -154,10 +154,10 @@ def main(argv=sys.argv[1:]):
     except HTTPError as e:
         logger.critical(e)
         exit(13)  # EACCES
-    # except Exception as e:
-    #     # TODO: better exception handling
-    #     logger.critical(e)
-    #     exit(1)
+    except Exception as e:
+        # TODO: better exception handling
+        logger.critical(e)
+        exit(1)
 
 
 if __name__ == "__main__":
