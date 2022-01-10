@@ -3,3 +3,4 @@ __pycache__/*
 .gitignore
 enumerate_iam/__pycache__/*
 enumerate_iam/utils/__pycache__/*
+aws_consoler/__pycache__/*
