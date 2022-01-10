@@ -38,7 +38,7 @@ pip3 install -r requirements.txt
 - 权限枚举模块(阅读源码自己实现)
 - ak生成aws_web控制端url (实现)
 - 假如ec2没有IAM角色或者对应的IAM角色的策略中没有ssm权限，需要手动赋予IAM角色或者修改policy
-   
+  参考python sdk 手册
 
 
 
