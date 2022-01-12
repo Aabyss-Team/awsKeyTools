@@ -27,6 +27,23 @@ current_arn = ""
 current_user = ""
 ec2_lst = []
 
+def write_key():
+    """写入文件中的key"""
+    home_path = os.path.expanduser("~")
+    config_path = os.path.join(home_path, ".aws", "config")
+    #提示用户输入
+    global access_key
+    global secret_key
+    access_key = input("access_key:").strip()
+    secret_key = input("secret_key:").strip()
+    # 将access_key 和 secret_key 写入配置文件
+    # 检查.aws 文件夹是否存在，不存在则创建,这个目录得检查一下呀
+    if not os.path.exists(home_path + "/.aws"):
+        os.mkdir(home_path + "/.aws")
+    with open(config_path, mode="w", encoding="utf-8") as f:
+        f.write("[default]\n")
+        f.write("aws_access_key_id=" + access_key + "\n")
+        f.write("aws_secret_access_key=" + secret_key + "\n") 
 
 def read_key():
     """读取文件中的key"""
@@ -46,17 +63,7 @@ def read_key():
                 if line.startswith("aws_secret_access_key"):
                     secret_key = line.split("=")[1].strip()
     else:
-        # 提示用户输入
-        access_key = input("access_key:").strip()
-        secret_key = input("secret_key:").strip()
-        # 将access_key 和 secret_key 写入配置文件
-        # 检查.aws 文件夹是否存在，不存在则创建,这个目录得检查一下呀
-        if not os.path.exists(home_path + "/.aws"):
-            os.mkdir(home_path + "/.aws")
-        with open(config_path, mode="w", encoding="utf-8") as f:
-            f.write("[default]\n")
-            f.write("aws_access_key_id=" + access_key + "\n")
-            f.write("aws_secret_access_key=" + secret_key + "\n")
+        write_key()
     return access_key, secret_key
 
 
@@ -397,6 +404,9 @@ class HelpCommand(Command):
     def run(self, line):
         console.print_childs_help()
 
+class ResetCommand(Command):
+    def run(self,line):
+        write_key()
 
 def main():
     global access_key, secret_key
@@ -410,6 +420,7 @@ def main():
     remote_command_command = RemoteCommandExecute("exec", help="ec2远程命令执行")
     create_aws_url_command = CreateAwsUrl("aws-url", help="根据当前高权限生成aws控制台访问url")
     reset_command = ResetCommand("reset", help="重置aws_ak")
+
     exit_command = ExitCommand("exit", help="退出程序")
 
     console.addChild(help_command)
