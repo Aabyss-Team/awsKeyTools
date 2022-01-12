@@ -2,7 +2,7 @@ from ishell.command import Command
 from enumerate_iam.main import enumerate_iam
 from lib import IAMClient 
 from .key import access_key, secret_key
-from .user_info_command import current_user 
+import  commands.user_info_command  as user_info_command
 
 # 获取key对应的用户权限
 class UserPrivilegesCommand(Command):
@@ -18,7 +18,7 @@ class UserPrivilegesCommand(Command):
             # 2.获取当前用户的aws托管策略和内嵌策略
             # 获取当前用户名
             try:
-                user_name = current_user.user_name
+                user_name = user_info_command.current_user.user_name
             except Exception:
                 print("请先使用 userinfo 获取当前用户，然后才能查看用户对应的权限")
                 return
