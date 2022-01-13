@@ -42,17 +42,21 @@ class RemoteCommandExecute(Command):
                 print(instance_profile_arn)
                 # 关联实例配置文件
                 client_ec2 = boto3.client('ec2', region_name=region_name)
-                response = client_ec2.associate_iam_instance_profile(
-                    IamInstanceProfile={
-                        'Arn': instance_profile_arn,
-                        'Name': instance_profile_name,
-                    },
-                    InstanceId=instance_id)
+                try:
+                    response = client_ec2.associate_iam_instance_profile(
+                        IamInstanceProfile={
+                            'Arn': instance_profile_arn,
+                            'Name': instance_profile_name,
+                        },
+                        InstanceId=instance_id)
+                except Exception:
+                    print("实例配置文件创建成功,但是关联失败，请重新执行exec")
+                    return
                 if response.get("ResponseMetadata").get(
                         "HTTPStatusCode") == 200:
                     ec2.iam_instance_profile_arn = instance_profile_arn
                     print(
-                        "实例配置文件添加成功 (ec2命令可以查看)，但是失效需要一定的等待时间，一般10分钟左右，请稍后再执行命令"
+                        "实例配置文件关联成功 (ec2命令可以查看)，但是失效需要一定的等待时间，一般10分钟左右，请稍后再执行命令"
                     )
                     return
                 else:
