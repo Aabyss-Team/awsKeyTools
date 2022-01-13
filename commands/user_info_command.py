@@ -19,6 +19,6 @@ class UserInfoCommand(Command):
         print("\ttags:\t\t\t", current_user.tags)
         print("\tpassword_last_used:\t", current_user.password_last_used)
         access_key_iterator = current_user.access_keys.all()
-        for access_key in access_key_iterator:
-            print("\taccess_key:\t\t", access_key.id)
+        for access_key_vaule in access_key_iterator:
+            print("\taccess_key:\t\t", access_key_vaule.id)
         print()

@@ -19,7 +19,6 @@ class IAMClient():
         attached_response = self._iam_client.list_attached_user_policies(
             UserName=user_name, PathPrefix='/', MaxItems=123)
         attached_policy_lst = attached_response.get("AttachedPolicies")
-        #稍等，别急嘛，我不看怎么封装。。。。。绝
         iam = boto3.resource('iam')
         # 如果托管策略存在，打印json
         for p_dic in attached_policy_lst:
@@ -50,7 +49,7 @@ class IAMClient():
     # 创建实例配置文件并附加
     def create_instance_profile(self):
         # 1.创建policy ssm_policy
-        with open("AmazonSSMManagedInstanceCore.json",
+        with open("amazon_ssm_managed_instance_core.json",
                   mode="r",
                   encoding="utf-8") as f:
             json2 = f.read()
@@ -61,7 +60,7 @@ class IAMClient():
         )
         # arn:aws:iam::455720863430:policy/ssm_policy
         # 2.创建角色 AmazonSSMManagedInstance
-        with open("ec2-role-trust-policy.json", mode="r",
+        with open("ec2_role_trust_policy.json", mode="r",
                   encoding="utf-8") as f:
             json1 = f.read()
         self._iam_client.create_role(
@@ -73,10 +72,6 @@ class IAMClient():
         )
         # arn:aws:iam::455720863430:role/AmazonSSMManagedInstance
         # 3.给角色加policy
-        with open("AmazonSSMManagedInstanceCore.json",
-                  mode="r",
-                  encoding="utf-8") as f:
-            json2 = f.read()
         self._iam_client.put_role_policy(RoleName='AmazonSSMManagedInstance',
                                          PolicyName='ssm_policy',
                                          PolicyDocument=json2)
@@ -104,4 +99,5 @@ class IAMClient():
                 print("检测到已经创建过实例配置文件，正在关联...")
                 return instance_profile_arn, name
         print("检测到没有创建实例配置文件，正在创建实例配置文件...")
-        return self.create_instance_profile()
+        instance_profile_arn,name = self.create_instance_profile()
+        return instance_profile_arn,name

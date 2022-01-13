@@ -19,30 +19,123 @@ pip3 install -r requirements.txt
 
 
 
-## 功能需求
+## 使用
 
-每个功能点对应一个函数 , 可以写一个简单的菜单栏
+第一次使用工具会提示输入ak
 
-提供用户输入对应功能的编号
+```bash
+python3 main.py
+```
 
-- 查看key对应的用户信息
-- 查看key对应的用户权限
-- 列出所有地区的ec2主机信息(标注出托管状态)
-  - 操作系统  公网ip 内网ip 实例id 计算机名称等
-- ec2远程执行命令
-- 创建IAM角色并添加到ec2上
+输入你的aws_ak即可
 
-新增功能
-- 提示用户必须init操作 （实现）
-- 封装列举的实例到一个对象中 （实现）
-- 权限枚举模块(阅读源码自己实现)
-- ak生成aws_web控制端url (实现)
-- 假如ec2没有IAM角色或者对应的IAM角色的策略中没有ssm权限，需要手动赋予IAM角色或者修改policy
-  参考python sdk 手册
+1.查看命令帮助
 
+```
+┌──(root💀192)-[~/桌面/awsKeyTools-new_dev (2)]
+└─# python3 main.py
 
+                    __                   __                .__          
+_____ __ _  _______|  | __ ____ ___.__._/  |_  ____   ____ |  |   ______
+\__  \ \/ \/ /  ___/  |/ // __ <   |  |\   __\/  _ \ /  _ \|  |  /  ___/
+ / __ \     /\___ \|    <\  ___/\___  | |  | (  <_> |  <_> )  |__\___ \ 
+(____  /\/\_//____  >__|_ \___  > ____| |__|  \____/ \____/|____/____  >
+     \/           \/     \/   \/\/                                   \/ 
+                                                     version : 0.0.1
+                                                     by dbg9 and 无在无不在
 
-## 相关文档：
+aws-key-tools > help
+Help:
+           help - 查看命令帮助
+       userinfo - 获取用户信息
+     privileges - 获取用户权限
+            ec2 - 获取所有地区的EC2（Elastic Computer Cloud）
+           exec - ec2远程命令执行
+        aws-url - 根据当前高权限生成aws控制台访问url
+          reset - 重置aws_ak
+           exit - 退出程序
+aws-key-tools > 
+```
+
+2.获取ak对应的用户信息
+
+```bash
+aws-key-tools > userinfo
+```
+
+![image-20220113104623065](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131046285.png)
+
+3.查看用户权限 , 默认查看的是用户对应策略的json文件
+
+```
+aws-key-tools > privileges 
+```
+
+![image-20220113104835778](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131048925.png)
+
+使用enum参数可以通过枚举查看用户的权限
+
+```bash
+aws-key-tools > privileges enum
+```
+
+![image-20220113105804929](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131058081.png)
+
+4.枚举当前用户可用地区存在的ec2主机
+
+```bash
+aws-key-tools > ec2
+```
+
+![image-20220113115143920](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131151181.png)
+
+5.指定ec2远程命令执行
+
+```
+aws-key-tools > exec
+```
+
+如果无法获取平台信息 , 需要用户手动输入
+
+如果当前ec2没有关联实例配置文件 , 会先检测是否存在实例配置文件 , 如果不存在就是创建 , 然后附加到ec2上
+
+![image-20220113120341066](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131203216.png)
+
+如果存在已创建的示例配置文件直接附加 
+
+![image-20220113112935706](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131129849.png)
+
+由于实例配置文件的关联需要一定的时间 , 所以约10分钟后 , 才能执行命令
+
+![image-20220113115250069](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131152191.png)
+
+输入 `exit` 退出当前命令执行
+
+6.生成aws控制台访问连接 , 需要当前用户有一定的权限才可以成功执行
+
+```bash
+aws-key-tools > aws-url
+```
+
+![image-20220113113107341](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131131488.png)
+
+7.重置aws_ak
+
+提示用户重新输入ak
+
+```bash
+aws-key-tools > reset
+```
+
+8.退出
+
+```bash
+aws-key-tools > exit 
+```
+
+## 参考：
 https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html
-https://docs.aws.amazon.com/index.html?nc2=h_ql_doc
 
+https://github.com/NetSPI/aws_consoler
+
+https://github.com/andresriancho/enumerate-iam
