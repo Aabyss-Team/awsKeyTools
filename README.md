@@ -101,6 +101,8 @@ aws-key-tools > exec
 
 ![image-20220113120341066](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131203216.png)
 
+如果创建并添加报错 , 请再次执行exec , 此时不会创建会直接添加
+
 如果存在已创建的示例配置文件直接附加 
 
 ![image-20220113112935706](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131129849.png)
