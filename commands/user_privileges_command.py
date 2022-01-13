@@ -1,8 +1,8 @@
 from ishell.command import Command
 from enumerate_iam.main import enumerate_iam
 from lib import IAMClient 
-from .key import access_key, secret_key
 import  commands.user_info_command  as user_info_command
+from .key import read_key
 
 # 获取key对应的用户权限
 class UserPrivilegesCommand(Command):
@@ -10,6 +10,7 @@ class UserPrivilegesCommand(Command):
         last_arg = line.strip().split()[-1]
         # 1.通过api的方式枚举，使用enum参数激活
         if last_arg == "enum":
+            access_key,secret_key = read_key()
             enumerate_iam(access_key=access_key,
                           secret_key=secret_key,
                           session_token=None,

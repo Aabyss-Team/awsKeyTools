@@ -1,4 +1,5 @@
 from ishell.command import Command
+from lib import IAMClient 
 from .ec2_info_command import ec2_lst
 import boto3
 import time 
@@ -38,6 +39,7 @@ class RemoteCommandExecute(Command):
                 # 获取实例配置文件
                 instance_profile_arn, instance_profile_name = IAMClient(
                 ).get_instance_profile()
+                print(instance_profile_arn)
                 # 关联实例配置文件
                 client_ec2 = boto3.client('ec2', region_name=region_name)
                 response = client_ec2.associate_iam_instance_profile(
