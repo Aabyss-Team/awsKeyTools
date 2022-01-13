@@ -87,7 +87,7 @@ aws-key-tools > privileges enum
 aws-key-tools > ec2
 ```
 
-![image-20220113115143920](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131151181.png)
+![image-20220113162308876](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131623225.png)
 
 5.指定ec2远程命令执行
 
