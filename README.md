@@ -63,7 +63,7 @@ aws-key-tools >
 aws-key-tools > userinfo
 ```
 
-![image-20220113104623065](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131046285.png)
+![image-20220113104623065](https://note-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131046285.png)
 
 3.查看用户权限 , 默认查看的是用户对应策略的json文件
 
@@ -71,7 +71,7 @@ aws-key-tools > userinfo
 aws-key-tools > privileges 
 ```
 
-![image-20220113104835778](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131048925.png)
+![image-20220113104835778](https://note-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131048925.png)
 
 使用enum参数可以通过枚举查看用户的权限
 
@@ -79,7 +79,7 @@ aws-key-tools > privileges
 aws-key-tools > privileges enum
 ```
 
-![image-20220113105804929](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131058081.png)
+![image-20220113105804929](https://note-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131058081.png)
 
 4.枚举当前用户可用地区存在的ec2主机
 
@@ -87,7 +87,7 @@ aws-key-tools > privileges enum
 aws-key-tools > ec2
 ```
 
-![image-20220113162308876](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131623225.png)
+![image-20220113162308876](https://note-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131623225.png)
 
 5.指定ec2远程命令执行
 
@@ -99,17 +99,17 @@ aws-key-tools > exec
 
 如果当前ec2没有关联实例配置文件 , 会先检测是否存在实例配置文件 , 如果不存在就是创建 , 然后附加到ec2上
 
-![image-20220113120341066](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131203216.png)
+![image-20220113120341066](https://note-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131203216.png)
 
 如果创建并添加报错 , 请再次执行exec , 此时不会创建会直接添加
 
 如果存在已创建的示例配置文件直接附加 
 
-![image-20220113112935706](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131129849.png)
+![image-20220113112935706](https://note-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131129849.png)
 
 由于实例配置文件的关联需要一定的时间 , 所以约10分钟后 , 才能执行命令
 
-![image-20220113115250069](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131152191.png)
+![image-20220113115250069](https://note-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131152191.png)
 
 输入 `exit` 退出当前命令执行
 
@@ -119,7 +119,7 @@ aws-key-tools > exec
 aws-key-tools > aws-url
 ```
 
-![image-20220113113107341](https://picgo-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131131488.png)
+![image-20220113113107341](https://note-1301783483.cos.ap-nanjing.myqcloud.com/image/202201131131488.png)
 
 7.重置aws_ak
 
